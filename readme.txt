@@ -2,13 +2,16 @@
 
 // 説明 //
 
-2Dキャラをベクターで動かすデモ
+2Dキャラをベクターで動かすテスト
 Paper.jsを使用
+
+ここから観れます
+https://uruno-fuyune.github.io/2D-character-animation-test/
 
 //  注意  //
 
 
-そのままindex.htmlを開いてもjsが画像ファイルを開けず動きません
+ローカル環境では、index.htmlをそのまま開いてもjsが画像ファイルを開けず動きません
 
 CORSエラーが出ます
 https://qiita.com/terufumi1122/items/39b2a3659bc585c07f64
