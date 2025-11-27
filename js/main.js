@@ -286,7 +286,7 @@ window.onload = function () {
   // SVG読み込み、この関数の中にフレーム処理を書かないと動かない、読み込み待つ方法ほかにない？//
 
 
-  paper.project.importSVG("../svg/test.svg", function (item) {
+  paper.project.importSVG("./svg/test.svg", function (item) {
 
 
 
@@ -788,4 +788,5 @@ window.onload = function () {
 
 
   paper.view.draw();
+
 };
