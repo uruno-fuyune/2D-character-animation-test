@@ -363,9 +363,9 @@ window.onload = function () {
     let height = chara.bounds.height;
     let center = chara.bounds.center.clone();
 
-    const neck = new paper.Point(paper.view.center.x, 300);
+    const neck = new paper.Point(paper.view.center.x, paper.view.size.height*5.2/10);
     //const backpivot = new paper.Point(paper.view.center.x, 100);
-    const bodyp = new paper.Point(paper.view.center.x, 700);
+    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height*1/10);
 
     head.pivot = neck;
     back.pivot = neck;
