@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <title>デバッグ</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.18/paper-full.min.js"></script>
+    <script src="js/main.js" defer></script>
+    <style>
+        #controls {
+            position: absolute;
+            top: 0;
+            right: 100;
+            width: 300px;
+            height: 100%;
+            /*background-color: rgba(0, 0, 0, 4);*/
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #controls label {
+            color: #000
+        }
+
+        #controls span {
+            color: #000
+        }
+
+        #controls input[type="range"] {
+            width: 150px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="controls">
+        <label>RX: <span id="xv">0</span> <br> <input type="range" id="rx" min="-1" max="1" step="any" value="0"></label>
+        <br>
+        <label>RY: <span id="yv">0</span> <br> <input type="range" id="ry" min="-1" max="1" step="any" value="0"></label>
+        <br>
+        <label>RZ: <span id="zv">0</span> <br> <input type="range" id="rz" min="-1" max="1" step="any" value="0"></label>
+        <br>
+        <label>RK: <span id="kv">0</span> <br> <input type="range" id="rk" min="-1" max="1" step="any" value="0"></label>
+        <br>
+        <label>RK2: <span id="kv2">0</span> <br> <input type="range" id="rk2" min="-1" max="1" step="any" value="0"></label>
+        <br>
+        <label>EM: <span id="ev">0</span> <br> <input type="range" id="ek" min="0" max="1" step="any" value="0"></label>
+    </div>
+<!--
+    <div id="controls">
+        
+        <span id="xv">0</span>
+        <br>
+        
+        <span id="yv">0</span>
+        <br>
+        
+        <span id="zv">0</span>
+        <br>
+        
+        <span id="kv">0</span>
+        <br>
+        
+        <span id="kv2">0</span>
+        <br>
+        
+        <span id="ev">0</span>
+    </div>
+-->
+
+    <canvas id="myCanvas" resize></canvas>
+<!--
+    <footer>
+        <p>©2025</p>
+    </footer>
+-->
+    <script>
+        const xs = document.querySelector("#rx");
+        const xv = document.querySelector("#xv");
+
+        const ys = document.querySelector("#ry");
+        const yv = document.querySelector("#yv");
+
+        const zs = document.querySelector("#rz");
+        const zv = document.querySelector("#zv");
+
+        const ks = document.querySelector("#rk");
+        const kv = document.querySelector("#kv");
+
+        const ks2 = document.querySelector("#rk2");
+        const kv2 = document.querySelector("#kv2");
+
+        const es = document.querySelector("#ek");
+        const ev = document.querySelector("#ev");
+
+        //let x = 0, y = 0, z = 0;
+        const faceRotatein = { x: 0, y: 0, z: 0 };
+
+        let Rk = 0, Rk2 = 0, emi = 0;
+        let pushA = false;
+
+        const gp = navigator.getGamepads();
+        const smoothFactor = 0.1;
+
+        function smooth(current, target, factor) {
+            return current + (target - current) * factor;
+        }
+
+        function loop() {
+            const gamepads = navigator.getGamepads();
+            const gamepad = gamepads[0];
+
+            if (gamepad) {
+                faceRotatein.y = smooth(faceRotatein.y,gamepad.axes[0],smoothFactor);
+                faceRotatein.x = smooth(faceRotatein.x,-gamepad.axes[1],smoothFactor);
+                Rk = smooth(Rk,gamepad.axes[2],smoothFactor*2);
+                Rk2 = smooth(Rk2,-gamepad.axes[3],smoothFactor*2);
+                pushA = gamepad.buttons[0].pressed;
+                xv.textContent = gamepad.axes[1].toFixed(5);
+                yv.textContent = gamepad.axes[0].toFixed(5);
+                kv.textContent = gamepad.axes[2].toFixed(5);
+                kv2.textContent = gamepad.axes[3].toFixed(5);
+            }
+
+            //console.log(faceRotatein.x, faceRotatein.y);
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        
+        xs.addEventListener("input", () => {
+            xv.textContent = xs.value;
+            faceRotatein.x = parseFloat(xs.value);
+            //console.log(faceRotate.x);
+        })
+
+        ys.addEventListener("input", () => {
+            yv.textContent = ys.value;
+            faceRotatein.y = parseFloat(ys.value);
+            //console.log(faceRotate.y)
+        })
+
+        zs.addEventListener("input", () => {
+            zv.textContent = zs.value;
+            faceRotatein.z = parseFloat(zs.value);
+            //console.log(faceRotate.z)
+            //console.log(Math.atan2(faceRotate.x, faceRotate.y));
+            //console.log(Math.sqrt(faceRotate.y * faceRotate.y + faceRotate.x * faceRotate.x));
+
+        })
+
+        ks.addEventListener("input", () => {
+            kv.textContent = ks.value;
+            Rk = parseFloat(ks.value);
+            //console.log(faceRotate.y)
+        })
+
+        ks2.addEventListener("input", () => {
+            kv2.textContent = ks2.value;
+            Rk2 = parseFloat(ks2.value);
+            //console.log(faceRotate.y)
+        })
+
+        es.addEventListener("input", () => {
+            ev.textContent = es.value;
+            emi = parseFloat(es.value);
+            //console.log(faceRotate.y)
+        })
+            
+    </script>
+
+</body>
+
+</html>
