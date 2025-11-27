@@ -646,13 +646,13 @@ window.onload = function () {
       lel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       lel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
       lelwparts.scaleXY(em * 0.3, em * em*5, 1, 1);
-      lelbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
+      //lelbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
       lel1parts.moveXY(-em * 5, -em * 40, 1, 1);
       lel2parts.moveXY(-em * 5, -em * 28, 1, 1);
       //lel3parts.moveXY(-em * 5, -em * 30, 1, 1);
       lelwparts.moveXY(-em * 5, -em * 19, 1, 1);
-      lelbparts.moveXY(-em * 5, -em * 30, 1, 1);
+      //lelbparts.moveXY(-em * 5, -em * 30, 1, 1);
 
 
 
@@ -662,13 +662,13 @@ window.onload = function () {
       rel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       rel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
       relwparts.scaleXY(em * 0.3, em * em*5, 1, 1);
-      relbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
+      //relbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
       rel1parts.moveXY(em * 5, -em * 40, 1, 1);
       rel2parts.moveXY(em * 5, -em * 28, 1, 1);
       //rel3parts.moveXY(em * 5, -em * 30, 1, 1);
       relwparts.moveXY(em * 5, -em * 19, 1, 1);
-      relbparts.moveXY(em * 5, -em * 30, 1, 1);
+      //relbparts.moveXY(em * 5, -em * 30, 1, 1);
 
       
       lbparts.pathinitialize();
