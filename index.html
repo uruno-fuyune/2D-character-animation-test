@@ -15,6 +15,7 @@
             width: 300px;
             height: 100%;
             /*background-color: rgba(0, 0, 0, 4);*/
+            pointer-events: none;
             padding: 10px;
             box-sizing: border-box;
         }
@@ -95,22 +96,75 @@
         const es = document.querySelector("#ek");
         const ev = document.querySelector("#ev");
 
+
+        const canvas=document.getElementById("myCanvas");
+        const rect = canvas.getBoundingClientRect();
+
         //let x = 0, y = 0, z = 0;
         const faceRotatein = { x: 0, y: 0, z: 0 };
 
         let Rk = 0, Rk2 = 0, emi = 0;
         let pushA = false;
+        let ontouch = false;
+
+        let startX=0,moveX=0,flickX=0;
+        let startY=0,moveY=0,flickY=0;
 
         const gp = navigator.getGamepads();
         const smoothFactor = 0.1;
+
+
 
         function smooth(current, target, factor) {
             return current + (target - current) * factor;
         }
 
+
+
+        canvas.addEventListener('touchstart',e=>{
+            e.preventDefault();
+            startX=e.touches[0].clientX;
+            startY=e.touches[0].clientY;
+            ontouch=true;
+            console.log("touch");
+        })
+
+        canvas.addEventListener('touchmove',e=>{
+            moveX=e.touches[0].clientX;
+            moveY=e.touches[0].clientY;
+            flickX=moveX-startX;
+            flickY=moveY-startY;
+            faceRotatein.y=flickX/rect.width*1.5;
+            faceRotatein.x=-flickY/rect.height*1.5;
+            xv.textContent = flickX;
+            yv.textContent = flickY;
+            console.log(moveX,moveY);
+        })
+
+        canvas.addEventListener('touchend',e=>{
+
+            ontouch=false;
+            console.log("touchend");
+        })
+
+
+
         function loop() {
             const gamepads = navigator.getGamepads();
             const gamepad = gamepads[0];
+
+            if(ontouch){
+                emi=smooth(emi,1,0.5);
+            }
+            else{
+                emi=smooth(emi,0,0.7);
+                faceRotatein.y=smooth(faceRotatein.y,0,0.3)
+                faceRotatein.x=smooth(faceRotatein.x,0,0.3)
+            }
+
+            
+
+            
 
             if (gamepad) {
                 faceRotatein.y = smooth(faceRotatein.y,gamepad.axes[0],smoothFactor);
@@ -130,6 +184,7 @@
         }
         loop();
 
+        
         
         xs.addEventListener("input", () => {
             xv.textContent = xs.value;
