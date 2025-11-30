@@ -4,20 +4,49 @@
 <head>
     <title>愛でろっ！</title>
     <meta charset="utf-8">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500&display=swap" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="css/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.18/paper-full.min.js"></script>
     <script src="js/main.js" defer></script>
     <style>
+
+        #toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 0.7rem;
+            line-height: 0rem;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            writing-mode: vertical-rl;
+            gap: 0rem;
+            letter-spacing: 0rem;
+        }
+
+        #toggle input {
+            width: 1rem;
+            height: 1rem;
+        }
+
+
+
         #controls {
             position: absolute;
             top: 0;
-            right: 100;
-            width: 300px;
-            height: 100%;
-            /*background-color: rgba(0, 0, 0, 4);*/
-            pointer-events: none;
-            padding: 10px;
+            font-size: 0.7rem;
+            background-color: rgba(200, 200, 200, 0.5);
+            align-items: center;
+            /*pointer-events: none;*/
+            padding: 1rem;
             box-sizing: border-box;
+            display: none;
+            flex-direction: column;
+            gap: 0rem;
         }
 
         #controls label {
@@ -29,54 +58,55 @@
         }
 
         #controls input[type="range"] {
-            width: 150px;
+            width: 10rem;
+        }
+
+        footer{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 1rem;
+            font-size: 1rem;
+            box-sizing: border-box;
         }
     </style>
 </head>
 
 <body>
 
+
+
+
+    <div>
+        <label id="toggle"><input type="checkbox" id="debug">&nbsp;デバッグ</label>
+    </div>
+
     <div id="controls">
-        <label>RX: <span id="xv">0</span> <br> <input type="range" id="rx" min="-1" max="1" step="any" value="0"></label>
-        <br>
-        <label>RY: <span id="yv">0</span> <br> <input type="range" id="ry" min="-1" max="1" step="any" value="0"></label>
-        <br>
-        <label>RZ: <span id="zv">0</span> <br> <input type="range" id="rz" min="-1" max="1" step="any" value="0"></label>
-        <br>
-        <label>RK: <span id="kv">0</span> <br> <input type="range" id="rk" min="-1" max="1" step="any" value="0"></label>
-        <br>
-        <label>RK2: <span id="kv2">0</span> <br> <input type="range" id="rk2" min="-1" max="1" step="any" value="0"></label>
-        <br>
+        <label>RX: <span id="xv">0</span> <br> <input type="range" id="rx" min="-1" max="1" step="any"
+                value="0"></label>
+
+        <label>RY: <span id="yv">0</span> <br> <input type="range" id="ry" min="-1" max="1" step="any"
+                value="0"></label>
+
+        <label>RZ: <span id="zv">0</span> <br> <input type="range" id="rz" min="-1" max="1" step="any"
+                value="0"></label>
+
+        <label>RK: <span id="kv">0</span> <br> <input type="range" id="rk" min="-1" max="1" step="any"
+                value="0"></label>
+
+        <label>RK2: <span id="kv2">0</span> <br> <input type="range" id="rk2" min="-1" max="1" step="any"
+                value="0"></label>
+
         <label>EM: <span id="ev">0</span> <br> <input type="range" id="ek" min="0" max="1" step="any" value="0"></label>
     </div>
-<!--
-    <div id="controls">
-        
-        <span id="xv">0</span>
-        <br>
-        
-        <span id="yv">0</span>
-        <br>
-        
-        <span id="zv">0</span>
-        <br>
-        
-        <span id="kv">0</span>
-        <br>
-        
-        <span id="kv2">0</span>
-        <br>
-        
-        <span id="ev">0</span>
-    </div>
--->
 
     <canvas id="myCanvas" resize></canvas>
-<!--
+    
     <footer>
-        <p>©2025</p>
+        <div>©2025 / fuyune uruno</div>
     </footer>
--->
+
+
     <script>
         const xs = document.querySelector("#rx");
         const xv = document.querySelector("#xv");
@@ -96,9 +126,17 @@
         const es = document.querySelector("#ek");
         const ev = document.querySelector("#ev");
 
+        const toggle = document.querySelector("#debug");
+        const controls = document.querySelector("#controls");
 
-        const canvas=document.getElementById("myCanvas");
+
+        const canvas = document.getElementById("myCanvas");
         const rect = canvas.getBoundingClientRect();
+
+        const gp = navigator.getGamepads();
+        const smoothFactor = 0.1;
+
+        let gamepad = null;
 
         //let x = 0, y = 0, z = 0;
         const faceRotatein = { x: 0, y: 0, z: 0 };
@@ -106,12 +144,12 @@
         let Rk = 0, Rk2 = 0, emi = 0;
         let pushA = false;
         let ontouch = false;
+        let touchmode = true;
 
-        let startX=0,moveX=0,flickX=0;
-        let startY=0,moveY=0,flickY=0;
+        let startX = 0, moveX = 0, flickX = 0;
+        let startY = 0, moveY = 0, flickY = 0;
 
-        const gp = navigator.getGamepads();
-        const smoothFactor = 0.1;
+
 
 
 
@@ -121,56 +159,75 @@
 
 
 
-        canvas.addEventListener('touchstart',e=>{
-            e.preventDefault();
-            startX=e.touches[0].clientX;
-            startY=e.touches[0].clientY;
-            ontouch=true;
-            console.log("touch");
+        toggle.addEventListener('change', () => {
+            controls.style.display = toggle.checked ? "flex" : "none";
+            touchmode = toggle.checked ? false : true;
+            console.log(toggle.checked ? "checked" : "unchecked");
         })
 
-        canvas.addEventListener('touchmove',e=>{
-            moveX=e.touches[0].clientX;
-            moveY=e.touches[0].clientY;
-            flickX=moveX-startX;
-            flickY=moveY-startY;
-            faceRotatein.y=flickX/rect.width*1.5;
-            faceRotatein.x=-flickY/rect.height*1.5;
-            xv.textContent = flickX;
-            yv.textContent = flickY;
-            console.log(moveX,moveY);
+
+
+
+        canvas.addEventListener('touchstart', e => {
+            if (touchmode) {
+                e.preventDefault();
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                ontouch = true;
+                console.log("touch");
+            }
         })
 
-        canvas.addEventListener('touchend',e=>{
+        canvas.addEventListener('touchmove', e => {
+            if (touchmode) {
+                moveX = e.touches[0].clientX;
+                moveY = e.touches[0].clientY;
+                flickX = moveX - startX;
+                flickY = moveY - startY;
+                faceRotatein.y = flickX / rect.width * 1.5;
+                faceRotatein.x = -flickY / rect.height * 1.5;
+                xv.textContent = flickY;
+                yv.textContent = flickX;
+                console.log(moveX, moveY);
+            }
+        })
 
-            ontouch=false;
-            console.log("touchend");
+        canvas.addEventListener('touchend', e => {
+            if (touchmode) {
+                ontouch = false;
+                console.log("touchend");
+            }
         })
 
 
 
         function loop() {
             const gamepads = navigator.getGamepads();
-            const gamepad = gamepads[0];
+            gamepad = gamepads[0];
 
-            if(ontouch){
-                emi=smooth(emi,1,0.5);
+
+            if (touchmode) {
+                if (ontouch) {
+
+                    emi = smooth(emi, 1, 0.5);
+
+                }
+                else {
+                    emi = smooth(emi, 0, 0.7);
+                    faceRotatein.y = smooth(faceRotatein.y, 0, 0.3);
+                    faceRotatein.x = smooth(faceRotatein.x, 0, 0.3);
+                }
             }
-            else{
-                emi=smooth(emi,0,0.7);
-                faceRotatein.y=smooth(faceRotatein.y,0,0.3)
-                faceRotatein.x=smooth(faceRotatein.x,0,0.3)
-            }
 
-            
 
-            
+
+
 
             if (gamepad) {
-                faceRotatein.y = smooth(faceRotatein.y,gamepad.axes[0],smoothFactor);
-                faceRotatein.x = smooth(faceRotatein.x,-gamepad.axes[1],smoothFactor);
-                Rk = smooth(Rk,gamepad.axes[2],smoothFactor*2);
-                Rk2 = smooth(Rk2,-gamepad.axes[3],smoothFactor*2);
+                faceRotatein.y = smooth(faceRotatein.y, gamepad.axes[0], smoothFactor);
+                faceRotatein.x = smooth(faceRotatein.x, -gamepad.axes[1], smoothFactor);
+                Rk = smooth(Rk, gamepad.axes[2], smoothFactor * 2);
+                Rk2 = smooth(Rk2, -gamepad.axes[3], smoothFactor * 2);
                 pushA = gamepad.buttons[0].pressed;
                 xv.textContent = gamepad.axes[1].toFixed(5);
                 yv.textContent = gamepad.axes[0].toFixed(5);
@@ -184,8 +241,8 @@
         }
         loop();
 
-        
-        
+
+
         xs.addEventListener("input", () => {
             xv.textContent = xs.value;
             faceRotatein.x = parseFloat(xs.value);
@@ -224,7 +281,7 @@
             emi = parseFloat(es.value);
             //console.log(faceRotate.y)
         })
-            
+
     </script>
 
 </body>
