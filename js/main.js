@@ -33,7 +33,7 @@ window.onload = function () {
 
   class parts {
     constructor(data) {
-      data.pivot = new paper.Point(0, 0);
+      //data.pivot = new paper.Point(0, 0);
       this.source = data.clone();
       this.state = data;
 
@@ -415,7 +415,35 @@ window.onload = function () {
     //eyer.visible= false;
 
 
+    //キャラの幅と高さと中心、汎用するデータ//
+    let weght = chara.bounds.weght;
+    let height = chara.bounds.height;
+    let center = chara.bounds.center.clone();
+
+    const neck = new paper.Point(paper.view.center.x, paper.view.size.height * 5.2 / 10);
+    //const backpivot = new paper.Point(paper.view.center.x, 100);
+    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height * 1 / 10);
+
+    head.pivot = neck;
+    back.pivot = neck;
+    chara.pivot = bodyp;
+
     
+
+    lelw.clipMask = true;
+    relw.clipMask = true;
+
+    fch.pivot = new paper.Point(0, 0);
+    flh1.pivot = new paper.Point(0, 0);
+    flh2.pivot = new paper.Point(0, 0);
+    flh3.pivot = new paper.Point(0, 0);
+    frh1.pivot = new paper.Point(0, 0);
+    frh2.pivot = new paper.Point(0, 0);
+    frh3.pivot = new paper.Point(0, 0);
+    bch.pivot = new paper.Point(0, 0);
+    blh.pivot = new paper.Point(0, 0);
+    brh.pivot = new paper.Point(0, 0);
+    bch2.pivot = new paper.Point(0, 0);
 
 
 
@@ -469,21 +497,7 @@ window.onload = function () {
 
 
 
-    //キャラの幅と高さと中心、汎用するデータ//
-    let weght = chara.bounds.weght;
-    let height = chara.bounds.height;
-    let center = chara.bounds.center.clone();
-
-    const neck = new paper.Point(paper.view.center.x, paper.view.size.height * 5.2 / 10);
-    //const backpivot = new paper.Point(paper.view.center.x, 100);
-    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height * 1 / 10);
-
-    head.pivot = neck;
-    back.pivot = neck;
-    chara.pivot = bodyp;
-
-    lelw.clipMask = true;
-    relw.clipMask = true;
+    
 
     //lelw.fullySelected = true;
     //relw.fullySelected = true;
