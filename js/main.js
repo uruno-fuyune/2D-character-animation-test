@@ -33,7 +33,6 @@ window.onload = function () {
 
   class parts {
     constructor(data) {
-      //data.pivot = new paper.Point(0, 0);
       this.source = data.clone();
       this.state = data;
 
