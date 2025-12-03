@@ -14,13 +14,18 @@ window.onload = function () {
   let preK = 0;
   let preA = false;
 
+  let dt = 27;
+  let dy = 0;
+  let acc = 0;
+  let vel = 0;
+
   let eyescale = 0.2
 
   let blinktime = 0;
   let nextblink = Math.random() * 10;
   let bp = 0;
   let isb = false;
-  
+
 
 
 
@@ -28,19 +33,21 @@ window.onload = function () {
 
   class parts {
     constructor(data) {
+      data.pivot = new paper.Point(0, 0);
       this.source = data.clone();
       this.state = data;
 
       this.state.applyMatrix = false;
       this.source.visible = false;
+      //this.state.pivot = new paper.Point(0,0);
       //this.state.visible = false;
       //this.state.fullySelected = true;
     }
 
     pathinitialize() {
 
-      this.state.position.x = this.source.position.x;
-      this.state.position.y = this.source.position.y;
+      this.state.position = this.source.position.clone();
+
 
       if (this.source.segments) {
 
@@ -62,6 +69,10 @@ window.onload = function () {
 
         };
       }
+
+
+      //this.state = this.source.clone();
+      //this.state.visible = true;
     }
 
 
@@ -76,18 +87,62 @@ window.onload = function () {
       this.state.rotation = dz * rotate;
     }
 
+    rotateXYZ(px, py, theta) {
+
+      const src = this.state.clone();
+
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+
+
+      for (let i = 0; i < this.state.segments.length; i++) {
+
+        const relative = src.segments[i].point.subtract(src.bounds.center);
+        const dx = relative.x - px;
+        const dy = relative.y - py;
+        const cal = new paper.Point(
+          dx * cos - dy * sin + px,
+          dx * sin + dy * cos + py
+        );
+        this.state.segments[i].point = src.bounds.center.add(cal);
+
+
+        if (src.segments[i].handleIn && !src.segments[i].handleIn.isZero()) {
+          const dxI = src.segments[i].handleIn.x;
+          const dyI = src.segments[i].handleIn.y;
+          this.state.segments[i].handleIn = new paper.Point(
+            dxI * cos - dyI * sin,
+            dxI * sin + dyI * cos
+          );
+        }
+
+        if (src.segments[i].handleOut && !src.segments[i].handleOut.isZero()) {
+          const dxO = src.segments[i].handleOut.x;
+          const dyO = src.segments[i].handleOut.y;
+          this.state.segments[i].handleOut = new paper.Point(
+            dxO * cos - dyO * sin,
+            dxO * sin + dyO * cos
+          );
+        }
+
+      }
+
+      src.remove();
+
+    }
+
     scaleXY(dx, dy, scaleX, scaleY) {
 
       const src = this.state.clone();
 
       for (let i = 0; i < this.state.segments.length; i++) {
 
-        const relative = src.segments[i].point.subtract(this.source.bounds.center);
+        const relative = src.segments[i].point.subtract(src.bounds.center);
         const scaled = new paper.Point(
           relative.x * (1 / (1 + (dx * scaleX))),
           relative.y * (1 / (1 + (dy * scaleY)))
         );
-        this.state.segments[i].point = this.source.bounds.center.add(scaled);
+        this.state.segments[i].point = src.bounds.center.add(scaled);
 
         if (src.segments[i].handleIn && !src.segments[i].handleIn.isZero()) {
           this.state.segments[i].handleIn = src.segments[i].handleIn.multiply(new paper.Point(
@@ -283,6 +338,8 @@ window.onload = function () {
 
 
 
+
+
   // SVG読み込み、この関数の中にフレーム処理を書かないと動かない、読み込み待つ方法ほかにない？//
 
   paper.project.importSVG("svg/test.svg", function (item) {
@@ -358,24 +415,7 @@ window.onload = function () {
     //eyer.visible= false;
 
 
-    //キャラの幅と高さと中心、汎用するデータ//
-    let weght = chara.bounds.weght;
-    let height = chara.bounds.height;
-    let center = chara.bounds.center.clone();
-
-    const neck = new paper.Point(paper.view.center.x, paper.view.size.height*5.2/10);
-    //const backpivot = new paper.Point(paper.view.center.x, 100);
-    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height*1/10);
-
-    head.pivot = neck;
-    back.pivot = neck;
-    chara.pivot = bodyp;
-
-    lelw.clipMask = true;
-    relw.clipMask = true;
-
-    //lelw.fullySelected = true;
-    //relw.fullySelected = true;
+    
 
 
 
@@ -429,6 +469,27 @@ window.onload = function () {
 
 
 
+    //キャラの幅と高さと中心、汎用するデータ//
+    let weght = chara.bounds.weght;
+    let height = chara.bounds.height;
+    let center = chara.bounds.center.clone();
+
+    const neck = new paper.Point(paper.view.center.x, paper.view.size.height * 5.2 / 10);
+    //const backpivot = new paper.Point(paper.view.center.x, 100);
+    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height * 1 / 10);
+
+    head.pivot = neck;
+    back.pivot = neck;
+    chara.pivot = bodyp;
+
+    lelw.clipMask = true;
+    relw.clipMask = true;
+
+    //lelw.fullySelected = true;
+    //relw.fullySelected = true;
+
+
+
 
     /*
     var neckpoint = new paper.Path.Circle({
@@ -450,23 +511,23 @@ window.onload = function () {
 
 
 
-    
 
-    
+
+
 
     let viewsize = paper.view.size.clone();
-    let previewsize = paper.view.size.height/viewsize.height;
+    let previewsize = paper.view.size.height / viewsize.height;
 
-    chara.scale(viewsize.height/chara.bounds.height);
+    chara.scale(viewsize.height / chara.bounds.height);
 
 
     function initialize() {
-      let scale = paper.view.size.height/viewsize.height;
+      let scale = paper.view.size.height / viewsize.height;
 
-      chara.scale(scale/previewsize);
-      
-      chara.bounds.bottomCenter = new paper.Point(paper.view.center.x,paper.view.size.height+(paper.view.size.height*1/10));
-      
+      chara.scale(scale / previewsize);
+
+      chara.bounds.bottomCenter = new paper.Point(paper.view.center.x, paper.view.size.height + (paper.view.size.height * 1 / 10));
+
       previewsize = scale;
     }
 
@@ -480,56 +541,67 @@ window.onload = function () {
       fchparts.pathinitialize();
       fchparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
       fchparts.scaleXY(Math.abs(faceRotate.y), faceRotate.x, 0.03, 0.05);
+      fchparts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
       fchparts.moveXY(faceRotate.y, faceRotate.x, 45, 40);
 
       flh1parts.pathinitialize();
       flh1parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh1parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05)
+      flh1parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
       flh1parts.moveXY(faceRotate.y, faceRotate.x, 35, 35);
 
       frh1parts.pathinitialize();
       frh1parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh1parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05)
+      frh1parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
       frh1parts.moveXY(faceRotate.y, faceRotate.x, 35, 35);
 
       flh2parts.pathinitialize();
       flh2parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh2parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05);
+      flh2parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
       flh2parts.moveXY(faceRotate.y, faceRotate.x, 25, 30);
 
       frh2parts.pathinitialize();
       frh2parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh2parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05)
+      frh2parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
       frh2parts.moveXY(faceRotate.y, faceRotate.x, 25, 30);
 
       flh3parts.pathinitialize();
       flh3parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh3parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05);
+      flh3parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
       flh3parts.moveXY(faceRotate.y, faceRotate.x, 20, 20);
 
       frh3parts.pathinitialize();
       frh3parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh3parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05);
+      frh3parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
       frh3parts.moveXY(faceRotate.y, faceRotate.x, 20, 20);
 
       bchparts.pathinitialize();
       bchparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       bchparts.scaleXY(Math.abs(faceRotate.y), -faceRotate.x, 0.05, 0.1);
+      bchparts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
       bchparts.moveXY(-faceRotate.y, -faceRotate.x, 20, 10);
 
       bch2parts.pathinitialize();
       bch2parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.05, 0.05, 1, weght);
       bch2parts.scaleXY(-Math.abs(faceRotate.y), -faceRotate.x, 0.01, 0.01);
+      bch2parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
       bch2parts.moveXY(-faceRotate.y, faceRotate.x, 5, 5);
 
       blhparts.pathinitialize();
       blhparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       blhparts.scaleXY(faceRotate.y, -faceRotate.x, 0.05, 0);
+      blhparts.rotateXYZ(0, -90, -acc * 0.3-(faceRotate.z*0.1));
       blhparts.moveXY(faceRotate.y, faceRotate.x, 15, 25);
 
       brhparts.pathinitialize();
       brhparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       brhparts.scaleXY(-faceRotate.y, -faceRotate.x, 0.05, 0);
+      brhparts.rotateXYZ(0, -90, -acc * 0.3-(faceRotate.z*0.1));
       brhparts.moveXY(faceRotate.y, faceRotate.x, 15, 25);
 
     }
@@ -575,26 +647,26 @@ window.onload = function () {
       //rel3parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
       //rel3parts.scaleXY(-faceRotate.y, faceRotate.x, 0.3, 0.05);
 
-      
+
 
 
       lelwparts.pathinitialize();
-      lelwparts.shearXY(0, -faceRotate.x, 1, eyescale * 0.95+em*0.3);
+      lelwparts.shearXY(0, -faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
       //lelwparts.scaleXY(0, Math.abs(faceRotate.x), 1, 0.10);
       //lelwparts.moveXY(0, asymmetry(faceRotate.x, 5, 0), 1, 1)
 
       relwparts.pathinitialize();
-      relwparts.shearXY(0, faceRotate.x, 1, eyescale * 0.95+em*0.3);
+      relwparts.shearXY(0, faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
       //relwparts.scaleXY(0, Math.abs(faceRotate.x), 1, 0.10);
       //relwparts.moveXY(0, asymmetry(faceRotate.x, 5, 0), 1, 1)
 
       lelbparts.pathinitialize();
       lelbparts.shearXY(0, -faceRotate.x, 1, eyescale);
-      lelbparts.moveXY((Rk-faceRotate.y*0.3 + 0.1),(Rk2-faceRotate.x*0.5 - 0.1), 35*-(asymmetry(faceRotate.y,0.3,0.1)-1), 35*(Math.abs(asymmetry(faceRotate.x,0.1,0.1))+1))
+      lelbparts.moveXY((Rk - faceRotate.y * 0.3 + 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * -(asymmetry(faceRotate.y, 0.3, 0.1) - 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1))
 
       relbparts.pathinitialize();
       relbparts.shearXY(0, faceRotate.x, 1, eyescale);
-      relbparts.moveXY((Rk-faceRotate.y*0.3 - 0.1),(Rk2-faceRotate.x*0.5 - 0.1), 35*(asymmetry(faceRotate.y,0.1,0.3)+1), 35*(Math.abs(asymmetry(faceRotate.x,0.1,0.1))+1))
+      relbparts.moveXY((Rk - faceRotate.y * 0.3 - 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * (asymmetry(faceRotate.y, 0.1, 0.3) + 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1))
 
 
       //eyelparts.pathinitialize();
@@ -608,8 +680,8 @@ window.onload = function () {
       //eyerparts.moveXY(em * 5 + asymmetry(faceRotate.y, 35, 25), -em * 30 + (asymmetry(faceRotate.x, 30, 30)), 1, 1);
       //eyerparts.state,scale((1 / (1 + (-faceRotate.y * 1))),(1 / (1 + (faceRotate.x * 1))));
 
-      
-      
+
+
 
 
 
@@ -622,11 +694,11 @@ window.onload = function () {
 
       lel1parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 30, 30)), 1, 1);
       lel2parts.moveXY(asymmetry(faceRotate.y, 15, 25), (asymmetry(faceRotate.x, 30, 20)), 1, 1);
-      lel3parts.moveXY(asymmetry(faceRotate.y, 25, 35),(asymmetry(faceRotate.x, 35, 25)), 1, 1);
+      lel3parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 35, 25)), 1, 1);
       lelwparts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 38, 28)), 1, 1);
       lelbparts.moveXY(asymmetry(faceRotate.y, 30, 40), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
 
-      
+
 
       rel1parts.scaleXY(-asymmetry(faceRotate.y, 0.15, 0.5), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
       rel2parts.scaleXY(asymmetry(faceRotate.y, 0.1, 0.3), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
@@ -640,12 +712,12 @@ window.onload = function () {
       relwparts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 38, 28)), 1, 1);
       relbparts.moveXY(asymmetry(faceRotate.y, 40, 30), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
 
-      
+
 
       lel1parts.scaleXY(em * 0.1, em * 0.3, 1, 1);
       lel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       lel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
-      lelwparts.scaleXY(em * 0.3, em * em*5, 1, 1);
+      lelwparts.scaleXY(em * 0.3, em * em * 5, 1, 1);
       //lelbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
       lel1parts.moveXY(-em * 5, -em * 40, 1, 1);
@@ -656,12 +728,12 @@ window.onload = function () {
 
 
 
-      
+
 
       rel1parts.scaleXY(em * 0.1, em * 0.3, 1, 1);
       rel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       rel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
-      relwparts.scaleXY(em * 0.3, em * em*5, 1, 1);
+      relwparts.scaleXY(em * 0.3, em * em * 5, 1, 1);
       //relbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
       rel1parts.moveXY(em * 5, -em * 40, 1, 1);
@@ -670,7 +742,7 @@ window.onload = function () {
       relwparts.moveXY(em * 5, -em * 19, 1, 1);
       //relbparts.moveXY(em * 5, -em * 30, 1, 1);
 
-      
+
       lbparts.pathinitialize();
       lbparts.shearXY(0, -faceRotate.x, 1, eyescale);
       lbparts.scaleXY(asymmetry(faceRotate.y, 0.4, 0.15), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
@@ -705,8 +777,14 @@ window.onload = function () {
 
     }
 
-    
 
+
+
+    let k = 0.5;
+    let accfac = 0.9;
+    let damping = 0.3;
+    let v = 0;
+    let tarX = 0;
 
     //フレーム毎の処理、ここに動かすコードを書く//
 
@@ -714,13 +792,26 @@ window.onload = function () {
 
 
 
-      faceRotate.x = faceRotatein.x + Math.cos(event.time * 1) * 0.5;
-      faceRotate.y = faceRotatein.y + Math.cos(event.time * 0.3) * 0.01;
-      faceRotate.z = faceRotatein.z + Math.sin(event.time * 0.3) * 0.1;
+      function smooth(current, target, factor) {
+        if ((target - current) * (1 - Math.exp(-event.delta * factor))) {
+          return (target - current) * (1 - Math.exp(-event.delta * factor));
+        }
+        else {
+          return 0;
+        }
+      }
+
+
+      //faceRotate.x = faceRotatein.x
+      faceRotate.y = faceRotatein.y
+      //faceRotate.z = faceRotatein.z
+      faceRotate.x = faceRotatein.x + (Math.cos(event.time * 1) * 0.5);
+      //faceRotate.y = faceRotatein.y + (Math.cos(event.time * 0.3) * 0.01);
+      faceRotate.z = faceRotatein.z + (Math.sin(event.time * 0.3) * 0.1);
       //em = emi+(Math.sin(event.time*0.5)/20 + 0.05);
 
       blinktime += event.delta;
-      if (blinktime > nextblink||(pushA&&!preA)) {
+      if (blinktime > nextblink || (pushA && !preA)) {
         blinktime = 0;
         nextblink = Math.random() * 10;
 
@@ -728,7 +819,7 @@ window.onload = function () {
         isb = true;
       }
 
-      
+
 
       em = emi;
 
@@ -743,32 +834,47 @@ window.onload = function () {
 
 
 
-      if (preX !== faceRotate.x || preY !== faceRotate.y || preZ !== faceRotate.z || preK !== Rk || preK2 !== Rk2) {
-
-       
-        hairs();
-        eyes();
-        faces();
 
 
-        charaparts.rotateZ(-faceRotate.z, 0.5);
-        headparts.rotateZ(faceRotate.z, 10);
-        backparts.rotateZ(faceRotate.z, 10);
+
+      dy = faceRotate.y - preY
+
+      v += (faceRotate.y - tarX) * k + accfac * dy;
+      v *= damping;
+      tarX += v;
+      acc = tarX - faceRotate.y;
+      console.log(acc);
 
 
-        preX = faceRotate.x;
-        preY = faceRotate.y;
-        preZ = faceRotate.z;
-        preK = Rk;
-        preK2 = Rk2;
 
 
-        //console.log("FrameUpdate!");
+      hairs();
+      eyes();
+      faces();
 
-        //console.log(event.time);
 
 
-      }
+
+
+      charaparts.rotateZ(-faceRotate.z, 0.5);
+      headparts.rotateZ(faceRotate.z, 10);
+      backparts.rotateZ(faceRotate.z, 10);
+
+
+
+      preX = faceRotate.x;
+      preY = faceRotate.y;
+      preZ = faceRotate.z;
+      preK = Rk;
+      preK2 = Rk2;
+
+
+      //console.log("FrameUpdate!");
+
+      //console.log(event.time);
+
+
+
 
 
       preA = pushA;
