@@ -40,7 +40,7 @@ window.onload = function () {
   class parts {
     constructor(data) {
 
-      data.pivot = new paper.Point(0, 0);
+      data.pivot = data.bounds.center;
       this.source = data.clone();
       this.state = data;
 
@@ -258,6 +258,8 @@ window.onload = function () {
 
       //this.state.bounds.center = this.source.bounds.center;
     }
+
+    
 
 
 
@@ -620,6 +622,7 @@ window.onload = function () {
       bchparts.scaleXY(Math.abs(faceRotate.y), -faceRotate.x, 0.05, 0.1);
       bchparts.rotateXYZ(0, -90, -acc * 0.5 - (faceRotate.z * 0.1));
       bchparts.moveXY(-faceRotate.y, -faceRotate.x, 20, 10);
+      //bchparts.select();
 
       bch2parts.pathinitialize();
       bch2parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.05, 0.05, 1, weght);
