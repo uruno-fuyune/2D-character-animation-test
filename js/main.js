@@ -19,6 +19,12 @@ window.onload = function () {
   let acc = 0;
   let vel = 0;
 
+  let k = 0.5;
+  let accfac = 0.9;
+  let damping = 0.3;
+  let v = 0;
+  let tarX = 0;
+
   let eyescale = 0.2
 
   let blinktime = 0;
@@ -33,6 +39,8 @@ window.onload = function () {
 
   class parts {
     constructor(data) {
+
+      data.pivot = new paper.Point(0, 0);
       this.source = data.clone();
       this.state = data;
 
@@ -78,8 +86,15 @@ window.onload = function () {
 
     moveXY(dx, dy, moveX, moveY) {
 
-      this.state.bounds.topCenter.x += dx * moveX;
-      this.state.bounds.topCenter.y -= dy * moveY;
+      //this.state.bounds.topCenter.x += dx * moveX;
+      //this.state.bounds.topCenter.y -= dy * moveY;
+
+      for (let i = 0; i < this.state.segments.length; i++) {
+
+        this.state.segments[i].point = this.state.segments[i].point.add(new paper.Point(dx * moveX, -dy * moveY));
+
+      }
+
     }
 
     rotateZ(dz, rotate) {
@@ -163,10 +178,7 @@ window.onload = function () {
       //this.state.scaling = new paper.Point((1 / (1 + (Math.abs(dx) * scaleX))), (1 / (1 + (Math.abs(dy) * scaleY))));
     }
 
-    gScale(dx, dy, scaleX, scaleY) {
 
-      this.state.scaling = new paper.Point((1 / (1 + (dx * scaleX))), (1 / (1 + (dy * scaleY))));
-    }
 
     shearXY(dx, dy, shearX, shearY) {
 
@@ -250,6 +262,13 @@ window.onload = function () {
 
 
 
+    /*
+
+    gScale(dx, dy, scaleX, scaleY) {
+
+      this.state.scaling = new paper.Point((1 / (1 + (dx * scaleX))), (1 / (1 + (dy * scaleY))));
+    }
+
     trapezoidalXY(dx, dy, trapezoidalX, trapezoidalY) {
 
       for (let i = 0; i < this.state.segments.length; i++) {
@@ -295,6 +314,7 @@ window.onload = function () {
       //this.state.bounds.height = this.source.bounds.height;
       this.state.bounds.center = this.source.bounds.center;
     }
+      */
 
   }
 
@@ -326,6 +346,13 @@ window.onload = function () {
     else {
       return 0;
     }
+  }
+
+  function swaying() {
+    v += (faceRotate.y - tarX) * k + accfac * dy;
+    v *= damping;
+    tarX += v;
+    acc = tarX - faceRotate.y;
   }
 
 
@@ -415,34 +442,7 @@ window.onload = function () {
 
 
     //キャラの幅と高さと中心、汎用するデータ//
-    let weght = chara.bounds.weght;
-    let height = chara.bounds.height;
-    let center = chara.bounds.center.clone();
 
-    const neck = new paper.Point(paper.view.center.x, paper.view.size.height * 5.2 / 10);
-    //const backpivot = new paper.Point(paper.view.center.x, 100);
-    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height * 1 / 10);
-
-    head.pivot = neck;
-    back.pivot = neck;
-    chara.pivot = bodyp;
-
-    
-
-    lelw.clipMask = true;
-    relw.clipMask = true;
-
-    fch.pivot = new paper.Point(0, 0);
-    flh1.pivot = new paper.Point(0, 0);
-    flh2.pivot = new paper.Point(0, 0);
-    flh3.pivot = new paper.Point(0, 0);
-    frh1.pivot = new paper.Point(0, 0);
-    frh2.pivot = new paper.Point(0, 0);
-    frh3.pivot = new paper.Point(0, 0);
-    bch.pivot = new paper.Point(0, 0);
-    blh.pivot = new paper.Point(0, 0);
-    brh.pivot = new paper.Point(0, 0);
-    bch2.pivot = new paper.Point(0, 0);
 
 
 
@@ -496,7 +496,27 @@ window.onload = function () {
 
 
 
-    
+
+    let weght = chara.bounds.weght;
+    let height = chara.bounds.height;
+    let center = chara.bounds.center.clone();
+
+    const neck = new paper.Point(paper.view.center.x, paper.view.size.height * 5.2 / 10);
+    //const backpivot = new paper.Point(paper.view.center.x, 100);
+    const bodyp = new paper.Point(paper.view.center.x, paper.view.size.height * 1 / 10);
+
+    head.pivot = neck;
+    back.pivot = neck;
+    chara.pivot = bodyp;
+
+
+
+    lelw.clipMask = true;
+    relw.clipMask = true;
+
+
+
+
 
     //lelw.fullySelected = true;
     //relw.fullySelected = true;
@@ -549,72 +569,74 @@ window.onload = function () {
     initialize();
 
 
+
+
     function hairs() {
 
       fchparts.pathinitialize();
       fchparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
       fchparts.scaleXY(Math.abs(faceRotate.y), faceRotate.x, 0.03, 0.05);
-      fchparts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
+      fchparts.rotateXYZ(0, -80, -acc * 0.5 - (faceRotate.z * 0.1));
       fchparts.moveXY(faceRotate.y, faceRotate.x, 45, 40);
 
       flh1parts.pathinitialize();
       flh1parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh1parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05)
-      flh1parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
+      flh1parts.rotateXYZ(0, -80, -acc * 0.5 - (faceRotate.z * 0.1));
       flh1parts.moveXY(faceRotate.y, faceRotate.x, 35, 35);
 
       frh1parts.pathinitialize();
       frh1parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh1parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05)
-      frh1parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
+      frh1parts.rotateXYZ(0, -80, -acc * 0.5 - (faceRotate.z * 0.1));
       frh1parts.moveXY(faceRotate.y, faceRotate.x, 35, 35);
 
       flh2parts.pathinitialize();
       flh2parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh2parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05);
-      flh2parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
+      flh2parts.rotateXYZ(0, -80, -acc * 0.5 - (faceRotate.z * 0.1));
       flh2parts.moveXY(faceRotate.y, faceRotate.x, 25, 30);
 
       frh2parts.pathinitialize();
       frh2parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh2parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05)
-      frh2parts.rotateXYZ(0, -80, -acc * 0.5-(faceRotate.z*0.1));
+      frh2parts.rotateXYZ(0, -80, -acc * 0.5 - (faceRotate.z * 0.1));
       frh2parts.moveXY(faceRotate.y, faceRotate.x, 25, 30);
 
       flh3parts.pathinitialize();
       flh3parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       flh3parts.scaleXY(faceRotate.y, faceRotate.x, 0.05, 0.05);
-      flh3parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
+      flh3parts.rotateXYZ(0, -90, -acc * 0.5 - (faceRotate.z * 0.1));
       flh3parts.moveXY(faceRotate.y, faceRotate.x, 20, 20);
 
       frh3parts.pathinitialize();
       frh3parts.perspectiveXY(-faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       frh3parts.scaleXY(-faceRotate.y, faceRotate.x, 0.05, 0.05);
-      frh3parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
+      frh3parts.rotateXYZ(0, -90, -acc * 0.5 - (faceRotate.z * 0.1));
       frh3parts.moveXY(faceRotate.y, faceRotate.x, 20, 20);
 
       bchparts.pathinitialize();
       bchparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       bchparts.scaleXY(Math.abs(faceRotate.y), -faceRotate.x, 0.05, 0.1);
-      bchparts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
+      bchparts.rotateXYZ(0, -90, -acc * 0.5 - (faceRotate.z * 0.1));
       bchparts.moveXY(-faceRotate.y, -faceRotate.x, 20, 10);
 
       bch2parts.pathinitialize();
       bch2parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.05, 0.05, 1, weght);
       bch2parts.scaleXY(-Math.abs(faceRotate.y), -faceRotate.x, 0.01, 0.01);
-      bch2parts.rotateXYZ(0, -90, -acc * 0.5-(faceRotate.z*0.1));
+      bch2parts.rotateXYZ(0, -90, -acc * 0.5 - (faceRotate.z * 0.1));
       bch2parts.moveXY(-faceRotate.y, faceRotate.x, 5, 5);
 
       blhparts.pathinitialize();
       blhparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       blhparts.scaleXY(faceRotate.y, -faceRotate.x, 0.05, 0);
-      blhparts.rotateXYZ(0, -90, -acc * 0.3-(faceRotate.z*0.1));
+      blhparts.rotateXYZ(-80, -180, -acc * 0.3 - (faceRotate.z * 0.1));
       blhparts.moveXY(faceRotate.y, faceRotate.x, 15, 25);
 
       brhparts.pathinitialize();
       brhparts.perspectiveXY(faceRotate.y, faceRotate.x, 0.1, 0.1, 1, weght);
       brhparts.scaleXY(-faceRotate.y, -faceRotate.x, 0.05, 0);
-      brhparts.rotateXYZ(0, -90, -acc * 0.3-(faceRotate.z*0.1));
+      brhparts.rotateXYZ(80, -180, -acc * 0.3 - (faceRotate.z * 0.1));
       brhparts.moveXY(faceRotate.y, faceRotate.x, 15, 25);
 
     }
@@ -622,78 +644,29 @@ window.onload = function () {
     function eyes() {
 
       lel1parts.pathinitialize();
-      lel1parts.shearXY(0, -faceRotate.x, 1, eyescale);
-      //lel1parts.scaleXY(0,em,1,0.3);
-      //lel1parts.moveXY(0, -em, 1, 45)
-      //lel1parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //lel1parts.scaleXY(faceRotate.y, faceRotate.x, 0.3, 0.05);
-
       rel1parts.pathinitialize();
-      rel1parts.shearXY(0, faceRotate.x, 1, eyescale);
-      //rel1parts.scaleXY(0,em,1,0.3);
-      //rel1parts.moveXY(0, -em, 1, 45)
-      //rel1parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //rel1parts.scaleXY(-faceRotate.y, faceRotate.x, 0.3, 0.05);
-
       lel2parts.pathinitialize();
-      lel2parts.shearXY(0, -faceRotate.x, 1, eyescale);
-      //lel2parts.scaleXY(0, em, 1, 0.9);
-      //lel2parts.moveXY(0, asymmetry(faceRotate.x, 0, 10), 1, 1)
-      //lel2parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //lel2parts.scaleXY(0, asymmetry(faceRotate.x,0,0.2), 0.3, 1);
-
       rel2parts.pathinitialize();
-      rel2parts.shearXY(0, faceRotate.x, 1, eyescale);
-      //rel2parts.scaleXY(0, em, 1, 0.9);
-      //rel2parts.moveXY(0, asymmetry(faceRotate.x, 0, 10), 1, 1)
-      //rel2parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //rel2parts.scaleXY(-faceRotate.y, faceRotate.x, 0.3, 0.05);
-
       lel3parts.pathinitialize();
-      lel3parts.shearXY(0, -faceRotate.x, 1, eyescale);
-      //lel3parts.moveXY(0,em,1,30)
-      //lel3parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //lel3parts.scaleXY(faceRotate.y, faceRotate.x, 0.3, 0.05);
-
       rel3parts.pathinitialize();
-      rel3parts.shearXY(0, faceRotate.x, 1, eyescale);
-      //rel3parts.perspectiveXY(faceRotate.y, faceRotate.x, 0.2, 0.1, 1, weght);
-      //rel3parts.scaleXY(-faceRotate.y, faceRotate.x, 0.3, 0.05);
-
-
-
-
       lelwparts.pathinitialize();
-      lelwparts.shearXY(0, -faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
-      //lelwparts.scaleXY(0, Math.abs(faceRotate.x), 1, 0.10);
-      //lelwparts.moveXY(0, asymmetry(faceRotate.x, 5, 0), 1, 1)
-
       relwparts.pathinitialize();
-      relwparts.shearXY(0, faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
-      //relwparts.scaleXY(0, Math.abs(faceRotate.x), 1, 0.10);
-      //relwparts.moveXY(0, asymmetry(faceRotate.x, 5, 0), 1, 1)
-
       lelbparts.pathinitialize();
-      lelbparts.shearXY(0, -faceRotate.x, 1, eyescale);
-      lelbparts.moveXY((Rk - faceRotate.y * 0.3 + 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * -(asymmetry(faceRotate.y, 0.3, 0.1) - 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1))
-
       relbparts.pathinitialize();
+      lbparts.pathinitialize();
+      rbparts.pathinitialize();
+
+
+      lel1parts.shearXY(0, -faceRotate.x, 1, eyescale);
+      rel1parts.shearXY(0, faceRotate.x, 1, eyescale);
+      lel2parts.shearXY(0, -faceRotate.x, 1, eyescale);
+      rel2parts.shearXY(0, faceRotate.x, 1, eyescale);
+      lel3parts.shearXY(0, -faceRotate.x, 1, eyescale);
+      rel3parts.shearXY(0, faceRotate.x, 1, eyescale);
+      lelwparts.shearXY(0, -faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
+      relwparts.shearXY(0, faceRotate.x, 1, eyescale * 0.95 + em * 0.3);
+      lelbparts.shearXY(0, -faceRotate.x, 1, eyescale);
       relbparts.shearXY(0, faceRotate.x, 1, eyescale);
-      relbparts.moveXY((Rk - faceRotate.y * 0.3 - 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * (asymmetry(faceRotate.y, 0.1, 0.3) + 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1))
-
-
-      //eyelparts.pathinitialize();
-      //eyelparts.gScale(em * 0.1 + asymmetry(faceRotate.y, 0.4, 0.15), em * 0.9 + (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1)
-      //eyelparts.gScale(1, asymmetry(faceRotate.y,0.2,0.1), 1, 1)
-      //eyelparts.moveXY(-em * 5 + asymmetry(faceRotate.y, 25, 35), -em * 30 + (asymmetry(faceRotate.x, 30, 30)), 1, 1);
-      //eyelparts.state.scale((1 / (1 + (faceRotate.y * 1))),(1 / (1 + (faceRotate.x * 1))));
-
-      //eyerparts.pathinitialize();
-      //eyerparts.gScale(em * 0.1 - asymmetry(faceRotate.y, 0.15, 0.4), em * 0.9 + (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1)
-      //eyerparts.moveXY(em * 5 + asymmetry(faceRotate.y, 35, 25), -em * 30 + (asymmetry(faceRotate.x, 30, 30)), 1, 1);
-      //eyerparts.state,scale((1 / (1 + (-faceRotate.y * 1))),(1 / (1 + (faceRotate.x * 1))));
-
-
 
 
 
@@ -705,12 +678,6 @@ window.onload = function () {
       lelwparts.scaleXY(asymmetry(faceRotate.y, 0.7, 0.15), (Math.abs(asymmetry(faceRotate.x, 0.01, 0.01))), 1, 1);
       lelbparts.scaleXY(asymmetry(faceRotate.y, 0.4, 0.15), (Math.abs(asymmetry(faceRotate.x, 0.0, 0.0))), 1, 1);
 
-      lel1parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 30, 30)), 1, 1);
-      lel2parts.moveXY(asymmetry(faceRotate.y, 15, 25), (asymmetry(faceRotate.x, 30, 20)), 1, 1);
-      lel3parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 35, 25)), 1, 1);
-      lelwparts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 38, 28)), 1, 1);
-      lelbparts.moveXY(asymmetry(faceRotate.y, 30, 40), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
-
 
 
       rel1parts.scaleXY(-asymmetry(faceRotate.y, 0.15, 0.5), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
@@ -719,51 +686,58 @@ window.onload = function () {
       relwparts.scaleXY(-asymmetry(faceRotate.y, 0.15, 0.7), (Math.abs(asymmetry(faceRotate.x, 0.01, 0.01))), 1, 1);
       relbparts.scaleXY(-asymmetry(faceRotate.y, 0.15, 0.4), (Math.abs(asymmetry(faceRotate.x, 0.0, 0.0))), 1, 1);
 
-      rel1parts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 30, 30)), 1, 1);
-      rel2parts.moveXY(asymmetry(faceRotate.y, 25, 15), (asymmetry(faceRotate.x, 30, 20)), 1, 1);
-      rel3parts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 35, 25)), 1, 1);
-      relwparts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 38, 28)), 1, 1);
-      relbparts.moveXY(asymmetry(faceRotate.y, 40, 30), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
-
-
-
-      lel1parts.scaleXY(em * 0.1, em * 0.3, 1, 1);
+      lel1parts.scaleXY(em * 0.1, em * 0.1, 1, 1);
       lel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       lel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
       lelwparts.scaleXY(em * 0.3, em * em * 5, 1, 1);
       //lelbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
-      lel1parts.moveXY(-em * 5, -em * 40, 1, 1);
-      lel2parts.moveXY(-em * 5, -em * 28, 1, 1);
-      //lel3parts.moveXY(-em * 5, -em * 30, 1, 1);
-      lelwparts.moveXY(-em * 5, -em * 19, 1, 1);
-      //lelbparts.moveXY(-em * 5, -em * 30, 1, 1);
-
-
-
-
-
-      rel1parts.scaleXY(em * 0.1, em * 0.3, 1, 1);
+      rel1parts.scaleXY(em * 0.1, em * 0.1, 1, 1);
       rel2parts.scaleXY(em * 0.1, em * 8, 1, 1);
       rel3parts.scaleXY(em * 0.1, em * 0.9, 1, 1);
       relwparts.scaleXY(em * 0.3, em * em * 5, 1, 1);
       //relbparts.scaleXY(em * 0.1, em * 0.9, 1, 1);
 
+
+      lel1parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 30, 30)), 1, 1);
+      lel2parts.moveXY(asymmetry(faceRotate.y, 15, 25), (asymmetry(faceRotate.x, 30, 20)), 1, 1);
+      lel3parts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 33, 30)), 1, 1);
+      lelwparts.moveXY(asymmetry(faceRotate.y, 25, 35), (asymmetry(faceRotate.x, 35, 28)), 1, 1);
+      lelbparts.moveXY(asymmetry(faceRotate.y, 30, 40), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
+
+      rel1parts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 30, 30)), 1, 1);
+      rel2parts.moveXY(asymmetry(faceRotate.y, 25, 15), (asymmetry(faceRotate.x, 30, 20)), 1, 1);
+      rel3parts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 33, 30)), 1, 1);
+      relwparts.moveXY(asymmetry(faceRotate.y, 35, 25), (asymmetry(faceRotate.x, 35, 28)), 1, 1);
+      relbparts.moveXY(asymmetry(faceRotate.y, 40, 30), (asymmetry(faceRotate.x, 40, 30)), 1, 1);
+
+
+
+      lel1parts.moveXY(-em * 5, -em * 40, 1, 1);
+      lel2parts.moveXY(-em * 5, -em * 30, 1, 1);
+      //lel3parts.moveXY(-em * 5, -em * 0, 1, 1);
+      lelwparts.moveXY(-em * 5, -em * 23, 1, 1);
+      //lelbparts.moveXY(-em * 5, -em * 30, 1, 1);
+
+
       rel1parts.moveXY(em * 5, -em * 40, 1, 1);
-      rel2parts.moveXY(em * 5, -em * 28, 1, 1);
-      //rel3parts.moveXY(em * 5, -em * 30, 1, 1);
-      relwparts.moveXY(em * 5, -em * 19, 1, 1);
+      rel2parts.moveXY(em * 5, -em * 30, 1, 1);
+      //rel3parts.moveXY(em * 5, -em * 0, 1, 1);
+      relwparts.moveXY(em * 5, -em * 23, 1, 1);
       //relbparts.moveXY(em * 5, -em * 30, 1, 1);
 
+      lelbparts.moveXY((Rk - faceRotate.y * 0.3 + 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * -(asymmetry(faceRotate.y, 0.3, 0.1) - 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1));
+      relbparts.moveXY((Rk - faceRotate.y * 0.3 - 0.1), (Rk2 - faceRotate.x * 0.5 - 0.1), 35 * (asymmetry(faceRotate.y, 0.1, 0.3) + 1), 35 * (Math.abs(asymmetry(faceRotate.x, 0.1, 0.1)) + 1));
 
-      lbparts.pathinitialize();
+
+
       lbparts.shearXY(0, -faceRotate.x, 1, eyescale);
-      lbparts.scaleXY(asymmetry(faceRotate.y, 0.4, 0.15), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
-      lbparts.moveXY(asymmetry(faceRotate.y, 25, 35), faceRotate.x, 1, 35)
-
-      rbparts.pathinitialize();
       rbparts.shearXY(0, faceRotate.x, 1, eyescale);
+
+      lbparts.scaleXY(asymmetry(faceRotate.y, 0.4, 0.15), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
       rbparts.scaleXY(-asymmetry(faceRotate.y, 0.15, 0.4), (Math.abs(asymmetry(faceRotate.x, 0.03, 0.1))), 1, 1);
+
+      lbparts.moveXY(asymmetry(faceRotate.y, 25, 35), faceRotate.x, 1, 35)
       rbparts.moveXY(asymmetry(faceRotate.y, 35, 25), faceRotate.x, 1, 35)
 
     }
@@ -793,35 +767,22 @@ window.onload = function () {
 
 
 
-    let k = 0.5;
-    let accfac = 0.9;
-    let damping = 0.3;
-    let v = 0;
-    let tarX = 0;
+
 
     //フレーム毎の処理、ここに動かすコードを書く//
 
     paper.view.onFrame = function (event) {
 
-
-
-      function smooth(current, target, factor) {
-        if ((target - current) * (1 - Math.exp(-event.delta * factor))) {
-          return (target - current) * (1 - Math.exp(-event.delta * factor));
-        }
-        else {
-          return 0;
-        }
-      }
-
-
       //faceRotate.x = faceRotatein.x
-      faceRotate.y = faceRotatein.y
+      //faceRotate.y = faceRotatein.y
       //faceRotate.z = faceRotatein.z
+
       faceRotate.x = faceRotatein.x + (Math.cos(event.time * 1) * 0.5);
-      //faceRotate.y = faceRotatein.y + (Math.cos(event.time * 0.3) * 0.01);
+      faceRotate.y = faceRotatein.y + (Math.cos(event.time * 0.3) * 0.01);
       faceRotate.z = faceRotatein.z + (Math.sin(event.time * 0.3) * 0.1);
       //em = emi+(Math.sin(event.time*0.5)/20 + 0.05);
+
+
 
       blinktime += event.delta;
       if (blinktime > nextblink || (pushA && !preA)) {
@@ -831,8 +792,6 @@ window.onload = function () {
         bp = 0;
         isb = true;
       }
-
-
 
       em = emi;
 
@@ -881,17 +840,12 @@ window.onload = function () {
       preK = Rk;
       preK2 = Rk2;
 
+      preA = pushA;
+
 
       //console.log("FrameUpdate!");
 
       //console.log(event.time);
-
-
-
-
-
-      preA = pushA;
-
 
     }
 
