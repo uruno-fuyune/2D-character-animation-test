@@ -130,9 +130,9 @@
 
         const btn = document.querySelector("#btn");
 
-        const alpha = 0;
-        const beta = 0;
-        const gamma = 0;
+        let alpha = 0;
+        let beta = 0;
+        let gamma = 0;
 
 
         const canvas = document.getElementById("myCanvas");
@@ -207,17 +207,21 @@
 
 
         btn.onclick = async () => {
-            if (DeviceOrientationEvent.requestPermission) {
-                const res = await DeviceOrientationEvent.requestPermission();
-                if (res !== "granted") return;
+            // 未対応環境の除外
+            if (typeof DeviceOrientationEvent === "undefined") return;
+
+            // iOS用の許可
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                const p = await DeviceOrientationEvent.requestPermission();
+                if (p !== "granted") return;
             }
 
+            // 傾き取得 → 変数に代入
             window.addEventListener("deviceorientation", e => {
-                alpha = e.alpha;
+                gamma = e.gamma; 
                 beta = e.beta;
-                gamma = e.gamma;
+                alpha = e.alpha;
                 zv.textContent = gamma;
-                console.log(e.beta, e.gamma);
             });
         };
 
@@ -242,7 +246,7 @@
             }
 
 
-            faceRotatein.z = gamma / 90;
+            //faceRotatein.z = gamma / 90;
 
 
             if (gamepad) {
