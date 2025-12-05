@@ -14,7 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.18/paper-full.min.js"></script>
     <script src="js/main.js" defer></script>
     <style>
-
         #toggle {
             position: absolute;
             top: 0;
@@ -61,7 +60,7 @@
             width: 10rem;
         }
 
-        footer{
+        footer {
             position: absolute;
             bottom: 0;
             left: 0;
@@ -76,7 +75,7 @@
 
 
 
-
+    <button id="btn">傾き取得 開始</button>
     <div>
         <label id="toggle"><input type="checkbox" id="debug">&nbsp;デバッグ</label>
     </div>
@@ -101,7 +100,7 @@
     </div>
 
     <canvas id="myCanvas" resize></canvas>
-    
+
     <footer>
         <div>© 2025 / fuyune uruno</div>
     </footer>
@@ -128,6 +127,12 @@
 
         const toggle = document.querySelector("#debug");
         const controls = document.querySelector("#controls");
+
+        const btn = document.querySelector("#btn");
+
+        const alpha = 0;
+        const beta = 0;
+        const gamma = 0;
 
 
         const canvas = document.getElementById("myCanvas");
@@ -199,6 +204,27 @@
             }
         })
 
+        if (typeof DeviceOrientationEvent === "function") {
+            window.addEventListener('deviceOrientation', e => {
+                alpha = e.alpha;
+                beta = e.beta;
+                gamma = e.gamma;
+                //console.log(gamma)
+            })
+        }
+
+
+        btn.onclick = async () => {
+            if (DeviceOrientationEvent.requestPermission) {
+                const res = await DeviceOrientationEvent.requestPermission();
+                if (res !== "granted") return;
+            }
+
+            window.addEventListener("deviceorientation", e => {
+                console.log(e.beta, e.gamma);
+            });
+        };
+
 
 
         function loop() {
@@ -220,7 +246,7 @@
             }
 
 
-
+            faceRotatein.z = gamma / 90;
 
 
             if (gamepad) {

@@ -818,7 +818,7 @@ window.onload = function () {
       v *= damping;
       tarX += v;
       acc = tarX - faceRotate.y;
-      console.log(acc);
+      //console.log(acc);
 
 
 
