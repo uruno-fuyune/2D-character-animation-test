@@ -204,15 +204,13 @@
             }
         })
 
-        if (typeof DeviceOrientationEvent === "function") {
-            window.addEventListener('deviceOrientation', e => {
-                alpha = e.alpha;
-                beta = e.beta;
-                gamma = e.gamma;
-                zv.textContent = gamma;
-                //console.log(gamma)
-            })
-        }
+        window.addEventListener('deviceOrientation', e => {
+            alpha = e.alpha;
+            beta = e.beta;
+            gamma = e.gamma;
+            zv.textContent = gamma;
+            //console.log(gamma)
+        })
 
 
         btn.onclick = async () => {
