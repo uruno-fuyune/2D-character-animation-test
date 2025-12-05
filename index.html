@@ -204,13 +204,6 @@
             }
         })
 
-        window.addEventListener('deviceOrientation', e => {
-            alpha = e.alpha;
-            beta = e.beta;
-            gamma = e.gamma;
-            zv.textContent = gamma;
-            //console.log(gamma)
-        })
 
 
         btn.onclick = async () => {
@@ -220,6 +213,10 @@
             }
 
             window.addEventListener("deviceorientation", e => {
+                alpha = e.alpha;
+                beta = e.beta;
+                gamma = e.gamma;
+                zv.textContent = gamma;
                 console.log(e.beta, e.gamma);
             });
         };
